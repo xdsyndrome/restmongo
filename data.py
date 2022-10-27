@@ -1,4 +1,4 @@
-""" Data package
+"""Module containing data package (payload)
 """
 import json
 from datetime import datetime

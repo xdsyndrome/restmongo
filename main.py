@@ -1,9 +1,10 @@
+"""Main module containing all APIs
+"""
+
 import json
 from flask import Flask, jsonify, request, Response
 from database import MongoDatabase
 from data import Data
-
-
 
 
 def create_app(testing):
