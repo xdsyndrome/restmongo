@@ -1,4 +1,5 @@
-# Main module for starting database
+"""Module containing all database methods
+"""
 
 from pymongo import MongoClient
 from bson import json_util, ObjectId
