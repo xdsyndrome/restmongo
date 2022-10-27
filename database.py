@@ -77,4 +77,66 @@ class MongoDatabase:
             'deleted_count': result.deleted_count,
         }
         return output
+    
+    def validate_user(self, user_id):
+        """Checks if user_id exists in database
+
+        Args:
+            user_id (ObjectId): User's ID
         
+        Returns:
+            boolean: True if valid, else false
+        """
+        cursor = self.users.find({"_id": ObjectId(user_id)})
+        if list(cursor):
+            return True
+        else: 
+            return False
+    
+    def add_friend(self, user_id, friend_id):
+        """Finds user's friend list using user_id, then appends friend_id to the list
+        Before adding, need to validate if friend is a user too
+
+        Args:
+            user_id (ObjectId): User's ID
+            friend_id (ObjectId): Friend's ID
+        
+        Returns:
+            dict: Dictionary containing user's ID and new list of friends
+        """
+        # Validate friend ID
+        if self.validate_user(friend_id):
+            self.users.update_one({"_id": ObjectId(user_id)},
+                                  {"$push": {"friends": friend_id}})
+            cursor = self.users.find({"_id": ObjectId(user_id)})
+            d = list(cursor)[0]
+            return {user_id: d["friends"]}
+        else:
+            return {user_id: "unable to validate"}
+    
+    def remove_friend(self, user_id, friend_id):
+        """Finds user's friend list using user_id, then removes friend_id from the list
+        Before removing, need to validate if friend is a user too
+
+        Args:
+            user_id (ObjectId): User's ID
+            friend_id (ObjectId): Friend to be removed's ID
+        
+        Returns:
+            dict: Dictionary containing user's ID and new list of friends
+        """
+        if self.validate_user(friend_id):
+            cursor = self.users.find({"_id": ObjectId(user_id)})
+            d = list(cursor)[0]
+            try:
+                d['friends'].remove(friend_id)
+                self.users.update_one({"_id": ObjectId(user_id)},
+                                      {"$set": {"friends": d['friends']}})
+                cursor = self.users.find({"_id": ObjectId(user_id)})
+                d = list(cursor)[0]
+                return {user_id: d["friends"]}
+            except ValueError:
+                return {user_id: "friend not found in list"}
+        else:
+            return {user_id: "unable to validate"}
+    

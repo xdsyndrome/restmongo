@@ -4,21 +4,23 @@ import json
 from datetime import datetime
 
 class Data:
-    def __init__(self, _id=None, name=None, dob=None, address=None, description=None):
+    def __init__(self, _id=None, name=None, dob=None, address=None, description=None, friends=None):
         """Init
 
         Args:
-            _id (str, optional): _description_. Defaults to None.
-            name (str, optional): _description_. Defaults to None.
-            dob (str, optional): _description_. Defaults to None.
-            address (str, optional): _description_. Defaults to None.
-            description (str, optional): _description_. Defaults to None.
+            _id (str, optional): User's ObjectId
+            name (str, optional): User name
+            dob (str, optional): User's Date of birth text
+            address (str, optional): User's Address text
+            description (str, optional): User's Description text
+            friends (list, optional): User's List of friends
         """
         self._id = _id
         self.name = name
         self.dob = dob
         self.address = address
         self.description = description
+        self.friends = friends
         self.createdAt = str(datetime.now())
         
     def get_json(self):
