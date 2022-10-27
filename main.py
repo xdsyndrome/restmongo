@@ -1,6 +1,5 @@
 """Main module containing all APIs
 """
-
 import json
 from flask import Flask, jsonify, request, Response
 from database import MongoDatabase
@@ -19,7 +18,7 @@ def create_app(testing):
             flask.wrapper.Response: Flask response
         """
         users = db.get_all()
-        response = Response(response=json.dumps(users),
+        response = Response(response=json.dumps({"get all users": users}),
                             status=200,
                             mimetype='application/json')
         return response
@@ -136,6 +135,69 @@ def create_app(testing):
                                 status=400,
                                 mimetype='application/json')
         return response
+    
+    @app.route('/addfriend/<string:user_id>', methods=["PUT"])
+    def add_friend(user_id):
+        """Add a friend to the user's friend list.
+        The friend must be an existing user in the database
+        (i.e. friend_id is a valid _id in the database)
+
+        Returns:
+            flask.wrapper.Response: Flask response
+        """
+        try:
+            new_data = Data(**request.get_json())
+        except TypeError as e:
+            return Response(response=json.dumps({"error": "Invalid Field"}),
+                            status=400,
+                            mimetype='application/json')
+        
+        result = db.add_friend(user_id, new_data.get_json()['friends'])
+
+        if isinstance(result[user_id], list) & (len(result[user_id]) >= 1):
+            return Response(response=json.dumps({"added friend": result}),
+                            status=200,
+                            mimetype='application/json')
+        else:
+            return Response(response=json.dumps({"error": result}),
+                            status=400,
+                            mimetype='application/json')
+
+    @app.route('/removefriend/<string:user_id>', methods=["POST"])
+    def remove_friend(user_id):
+        """Remove a friend from the user's friend list.
+        Function will also validate if a friend's ID has been provided.
+
+        Args:
+            user_id (ObjectId): User ID
+
+        Returns:
+            flask.wrapper.Response: Flask response
+        """
+        try:
+            new_data = Data(**request.get_json())
+        except TypeError as e:
+            return Response(response=json.dumps({"error": "Invalid Field"}),
+                            status=400,
+                            mimetype='application/json')
+
+        # If no friend id in JSON request
+        if len(new_data.get_json()['friends']) == 0:
+            return Response(response=json.dumps({"error": "No friend_id provided"}),
+                            status=400,
+                            mimetype='application/json')
+        else:
+            result = db.remove_friend(user_id, new_data.get_json()['friends'])
+
+        # Parse results
+        if isinstance(result[user_id], list):
+            return Response(response=json.dumps({"removed friend": result}),
+                            status=200,
+                            mimetype='application/json')
+        else:
+            return Response(response=json.dumps({"error": result}),
+                            status=400,
+                            mimetype='application/json')
     
     return app, db
 
